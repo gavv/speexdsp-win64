@@ -1,0 +1,88 @@
+name: "build"
+
+on:
+  workflow_dispatch:
+
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: windows-latest
+    steps:
+      - name: Setup Git
+        run: |
+          git config --global core.autocrlf false
+          git config --global core.eol lf
+
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Setup MSVC
+        uses: ilammy/msvc-dev-cmd@v1
+
+      - name: Set up MSYS2
+        uses: msys2/setup-msys2@v2
+        with:
+          update: true
+          path-type: inherit
+          install: >-
+            base-devel
+            mingw-w64-x86_64-cccl
+
+      - name: Configure
+        shell: msys2 {0}
+        run: |
+          set -ex
+          cd speexdsp
+          ./autogen.sh
+          ./configure --enable-static --disable-shared --disable-examples \
+              CC=/mingw64/bin/cccl LD=/mingw64/bin/cccl CFLAGS="/FS"
+
+      - name: Build
+        shell: msys2 {0}
+        run: |
+          set -ex
+          make -C speexdsp -j2
+
+      - name: Install
+        shell: msys2 {0}
+        run: |
+          set -ex
+          mkdir -p ../install
+          make -C speexdsp DESTDIR="$(pwd)/../install" install
+
+      - name: Clean
+        shell: msys2 {0}
+        run: |
+          set -ex
+          make -C speexdsp clean
+
+      - name: Deploy
+        shell: pwsh
+        run: |
+          cd speexdsp
+          $git_tag = git describe --tags --abbrev=0
+          cd ..
+          git checkout pkg
+          if (test-path include) {
+            rm -r include
+          }
+          if (test-path lib) {
+            rm -r lib
+          }
+          mv ../install/mingw64/include .
+          mv ../install/mingw64/lib .
+          git add include
+          git add lib
+          git config user.email "actions-bot@users.noreply.github.com"
+          git config user.name "actions-bot"
+          git commit -m"Deploy SpeexDSP ${git_tag}"
+          git push -f origin pkg:pkg
+          git tag -f "${git_tag}"
+          git push origin :refs/tags/"${git_tag}"
+          git push origin --tags
