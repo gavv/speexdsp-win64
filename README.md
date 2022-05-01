@@ -2,7 +2,7 @@
 
 Prebuilt [SpeexDSP](https://github.com/xiph/speexdsp) static library for 64-bit MSVC.
 
-Binaries are built and published automatically using Github Actions. You can either use binaries from this repo, or fork the repo and configure your own build, so that you can completely trust the build result.
+Binaries are built and published automatically using Github Actions. You can either use binaries from this repo, or fork the repo and configure your own build, so that you can completely trust the build results.
 
 Branch    | Description
 --------- | ------
