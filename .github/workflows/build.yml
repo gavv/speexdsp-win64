@@ -32,6 +32,7 @@ jobs:
           path-type: inherit
           install: >-
             base-devel
+            autoconf-wrapper
             mingw-w64-x86_64-cccl
 
       - name: Configure
