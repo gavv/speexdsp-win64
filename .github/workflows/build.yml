@@ -32,6 +32,8 @@ jobs:
           path-type: inherit
           install: >-
             base-devel
+            libtool
+            autoconf-archive
             autoconf-wrapper
             automake-wrapper
             mingw-w64-x86_64-cccl
