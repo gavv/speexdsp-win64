@@ -33,6 +33,7 @@ jobs:
           install: >-
             base-devel
             autoconf-wrapper
+            automake-wrapper
             mingw-w64-x86_64-cccl
 
       - name: Configure
